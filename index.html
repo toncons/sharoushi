@@ -26,8 +26,11 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* 画面全体の意図しないスクロールを防止 */
+            overscroll-behavior: none;
+            touch-action: manipulation;
         }
-        /* スマートフォンサイズを固定し、はみ出しや不安定さを解消 */
+        /* スマートフォンサイズを固定し、上下のバウンスを抑制 */
         .container {
             width: 100%;
             max-width: 414px;
@@ -69,7 +72,9 @@
             flex: 1;
             padding: 12px;
             overflow-y: auto;
-            /* フッターに隠れないよう下部に十分なスペースを確保 */
+            /* 内部スクロールをスムーズにし、画面全体の動きを固定 */
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
             padding-bottom: 95px;
         }
         .card {
@@ -224,7 +229,7 @@
 <div class="container">
     <header>
         <h1>社労士 学習スケジュール</h1>
-        <span class="app-version">v1.2.0</span>
+        <span class="app-version">v1.2.1</span>
     </header>
 
     <div class="content">
@@ -300,9 +305,9 @@
                     <div class="form-group">
                         <label>ページ範囲 (例: 1 〜 30)</label>
                         <div style="display: flex; gap: 4px; align-items: center;">
-                            <input type="number" id="input-p1" min="1" placeholder="開始" required>
+                            <input type="number" id="input-p1" inputmode="numeric" pattern="[0-9]*" min="1" placeholder="開始" required>
                             <span>〜</span>
-                            <input type="number" id="input-p2" min="1" placeholder="終了" required>
+                            <input type="number" id="input-p2" inputmode="numeric" pattern="[0-9]*" min="1" placeholder="終了" required>
                         </div>
                     </div>
                     <button type="submit" id="form-submit-btn">予定を追加</button>
@@ -473,13 +478,13 @@
                     <div style="font-weight:bold; font-size:0.8rem; margin-bottom:4px; color:var(--primary);">${name}</div>
                     <div style="font-size:0.7rem; color:#1abc9c; font-weight:bold; margin-bottom:2px;">【テキスト】</div>
                     <div style="display:flex; gap:6px; font-size:0.75rem; margin-bottom:4px;">
-                        <div style="flex:1;"><label>目標P</label><input type="number" value="${data.text.target}" min="1" onchange="updateSubj('${name}', 'text', 'target', this.value)"></div>
-                        <div style="flex:1;"><label>実績P</label><input type="number" value="${data.text.actual}" min="0" onchange="updateSubj('${name}', 'text', 'actual', this.value)"></div>
+                        <div style="flex:1;"><label>目標P</label><input type="number" inputmode="numeric" pattern="[0-9]*" value="${data.text.target}" min="1" onchange="updateSubj('${name}', 'text', 'target', this.value)"></div>
+                        <div style="flex:1;"><label>実績P</label><input type="number" inputmode="numeric" pattern="[0-9]*" value="${data.text.actual}" min="0" onchange="updateSubj('${name}', 'text', 'actual', this.value)"></div>
                     </div>
                     <div style="font-size:0.7rem; color:#e67e22; font-weight:bold; margin-bottom:2px;">【問題集】</div>
                     <div style="display:flex; gap:6px; font-size:0.75rem;">
-                        <div style="flex:1;"><label>目標P</label><input type="number" value="${data.quiz.target}" min="1" onchange="updateSubj('${name}', 'quiz', 'target', this.value)"></div>
-                        <div style="flex:1;"><label>実績P</label><input type="number" value="${data.quiz.actual}" min="0" onchange="updateSubj('${name}', 'quiz', 'actual', this.value)"></div>
+                        <div style="flex:1;"><label>目標P</label><input type="number" inputmode="numeric" pattern="[0-9]*" value="${data.quiz.target}" min="1" onchange="updateSubj('${name}', 'quiz', 'target', this.value)"></div>
+                        <div style="flex:1;"><label>実績P</label><input type="number" inputmode="numeric" pattern="[0-9]*" value="${data.quiz.actual}" min="0" onchange="updateSubj('${name}', 'quiz', 'actual', this.value)"></div>
                     </div>
                 </div>
             `;
