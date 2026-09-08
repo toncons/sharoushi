@@ -26,30 +26,39 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* 画面全体の意図しないスクロールを防止 */
             overscroll-behavior: none;
             touch-action: manipulation;
         }
-        /* スマートフォンサイズを固定し、上下のバウンスを抑制 */
+        /* パソコン等でも崩れず、中央に美しく配置されるスマートフォンフレーム風の設計（レスポンシブ対応） */
         .container {
             width: 100%;
-            max-width: 414px;
+            max-width: 450px;
             height: 100vh;
-            max-height: 896px;
+            max-height: 100vh;
             background: var(--card);
             display: flex;
             flex-direction: column;
             position: relative;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             overflow: hidden;
-            border-radius: 16px;
+            border-radius: 0; /* パソコン表示でも角が丸くならないように変更 */
         }
+
+        @media (min-width: 480px) {
+            .container {
+                height: 90vh;
+                max-height: 850px;
+                border-radius: 12px; /*PC表示時は適度な角丸に */
+            }
+        }
+
         header {
             background: var(--primary);
             color: white;
             padding: 14px 16px;
             text-align: center;
             border-bottom: 3px solid var(--accent);
+            border-radius: 0; /* 丸みを完全になくす */
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
@@ -72,7 +81,6 @@
             flex: 1;
             padding: 12px;
             overflow-y: auto;
-            /* 内部スクロールをスムーズにし、画面全体の動きを固定 */
             -webkit-overflow-scrolling: touch;
             overscroll-behavior: contain;
             padding-bottom: 95px;
@@ -80,7 +88,7 @@
         .card {
             background: #fff;
             border: 1px solid #e1e8ed;
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 12px;
             margin-bottom: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
@@ -125,7 +133,7 @@
         button:hover {
             background: var(--accent-hover);
         }
-        /* フッターを固定しサイズを安定化 */
+        /* フッターの丸みをなくし、直線的なデザインに固定 */
         .nav {
             position: absolute;
             bottom: 0;
@@ -134,6 +142,7 @@
             height: 75px;
             background: var(--primary);
             border-top: 2px solid var(--accent);
+            border-radius: 0;
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -229,7 +238,7 @@
 <div class="container">
     <header>
         <h1>社労士 学習スケジュール</h1>
-        <span class="app-version">v1.2.1</span>
+        <span class="app-version">v1.3.0</span>
     </header>
 
     <div class="content">
