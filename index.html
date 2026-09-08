@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社労士学習スケジュール</title>
+    <style>
+        :root {
+            --primary: #1a252f;      /* 濃い紺色 */
+            --accent: #1abc9c;       /* エメラルドグリーン */
+            --accent-hover: #16a085;
+            --bg: #f4f7f6;
+            --card: #ffffff;
+            --text: #2c3e50;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            background: var(--card);
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding-bottom: 90px; /* フッターを大きくした分パディングを調整 */
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 18px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.15rem;
+            border-bottom: 3px solid var(--accent);
+        }
+        .content {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+        }
+        .card {
+            background: #fff;
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 8px;
+            border-left: 4px solid var(--accent);
+            padding-left: 6px;
+        }
+        .form-group {
+            margin-bottom: 8px;
+        }
+        label {
+            display: block;
+            font-size: 0.75rem;
+            color: #555;
+            margin-bottom: 3px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 9px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+        }
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: var(--accent-hover);
+        }
+        /* フッターの縦幅を大きくし、エレガントなカラーに調整 */
+        .nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 430px;
+            background: var(--primary);
+            border-top: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 10;
+        }
+        .nav-item {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #bdc3c7;
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            transition: color 0.2s;
+        }
+        .nav-item.active {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        .progress-bg {
+            background: #e1e8ed;
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .progress-fill {
+            background: var(--accent);
+            height: 100%;
+            width: 0%;
+        }
+        .progress-fill-q {
+            background: #f39c12;
+            height: 100%;
+            width: 0%;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .calendar-day-header {
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .calendar-cell {
+            background: #fdfdfd;
+            border: 1px solid #eaeaea;
+            border-radius: 6px;
+            min-height: 48px;
+            padding: 2px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .calendar-cell.today {
+            border-color: var(--accent);
+            background: #e8f8f5;
+        }
+        .calendar-cell.has-event::after {
+            content: '';
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-top: 3px;
+        }
+        .btn-success {
+            background-color: var(--accent) !important;
+        }
+        .btn-warning {
+            background-color: #e67e22 !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>社労士 学習スケジュール</header>
+
+    <div class="content">
+        <!-- タブ1: 進捗・グラフ -->
+        <div id="tab-dash" class="tab-pane active">
+            <div class="title">学習バランス（レーダーチャート）</div>
+            <div class="card" style="text-align: center;">
+                <canvas id="radarCanvas" width="260" height="260" style="max-width: 100%;"></canvas>
+            </div>
+
+            <div class="title">科目別進捗 (テキスト・問題集別)</div>
+            <div class="card" id="progress-list"></div>
+        </div>
+
+        <!-- タブ2: 週間カレンダーと予定管理 -->
+        <div id="tab-calendar" class="tab-pane">
+            <div class="title">週間予定カレンダー</div>
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; font-weight: bold;">
+                    <button onclick="changeWeek(-1)" style="width: auto; padding: 4px 10px;">&lt; 前週</button>
+                    <span id="week-title" style="color: var(--primary);">---</span>
+                    <button onclick="changeWeek(1)" style="width: auto; padding: 4px 10px;">翌週 &gt;</button>
+                </div>
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">日</div>
+                    <div class="calendar-day-header">月</div>
+                    <div class="calendar-day-header">火</div>
+                    <div class="calendar-day-header">水</div>
+                    <div class="calendar-day-header">木</div>
+                    <div class="calendar-day-header">金</div>
+                    <div class="calendar-day-header">土</div>
+                </div>
+                <div id="weekly-calendar-grid" class="calendar-grid" style="margin-bottom: 10px;"></div>
+                
+                <div id="selected-day-details" style="font-size: 0.8rem; border-top: 1px solid #eee; padding-top: 8px;">
+                    <b id="selected-date-label" style="color: var(--primary);">日付を選択してください</b>
+                    <div id="selected-day-events" style="margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <div class="title" id="form-title">学習予定の追加</div>
+            <div class="card">
+                <form id="study-form" onsubmit="handleFormSubmit(event)">
+                    <input type="hidden" id="edit-index" value="-1">
+                    <div class="form-group">
+                        <label>日付</label>
+                        <input type="date" id="input-date" required onchange="onDateChange(this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label>学習科目</label>
+                        <select id="input-subject">
+                            <option value="労働基準法・安衛法">労働基準法・安衛法</option>
+                            <option value="労災保険法">労災保険法</option>
+                            <option value="雇用保険法">雇用保険法</option>
+                            <option value="労働一般常識">労働一般常識</option>
+                            <option value="健康保険法">健康保険法</option>
+                            <option value="国民年金法">国民年金法</option>
+                            <option value="厚生年金保険法">厚生年金保険法</option>
+                            <option value="社会保険一般常識">社会保険一般常識</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>教材区分</label>
+                        <select id="input-type">
+                            <option value="テキスト">テキスト</option>
+                            <option value="問題集">問題集</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>本・問題集名</label>
+                        <select id="input-book" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>ページ範囲 (例: 1 〜 30)</label>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <input type="number" id="input-p1" min="1" placeholder="開始" required>
+                            <span>〜</span>
+                            <input type="number" id="input-p2" min="1" placeholder="終了" required>
+                        </div>
+                    </div>
+                    <button type="submit" id="form-submit-btn">予定を追加</button>
+                    <button type="button" id="form-cancel-btn" style="background:#95a5a6; display:none;" onclick="resetForm()">キャンセル</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- タブ3: 本・問題集管理 -->
+        <div id="tab-books" class="tab-pane">
+            <div class="title">本・問題集の管理</div>
+            <div class="card">
+                <form onsubmit="addBook(event)">
+                    <div class="form-group">
+                        <label>教材名</label>
+                        <input type="text" id="new-book-name" placeholder="例: 労基法基本テキスト" required>
+                    </div>
+                    <button type="submit">教材を追加</button>
+                </form>
+            </div>
+
+            <div class="title">登録済み教材一覧</div>
+            <div class="card" id="book-list"></div>
+        </div>
+
+        <!-- タブ4: 科目別ページ目標管理 -->
+        <div id="tab-subj-manage" class="tab-pane">
+            <div class="title">科目別ページ目標管理</div>
+            <div class="card">
+                <p style="font-size: 0.75rem; color: #666; margin-top: 0;">各科目の目標総ページ数や実績を設定できます。</p>
+                <div id="subject-manage-list"></div>
+            </div>
+        </div>
+
+        <!-- タブ5: 履歴・設定 -->
+        <div id="tab-history" class="tab-pane">
+            <div class="title">学習履歴・管理</div>
+            <div class="card" id="history-list">
+                <p style="font-size: 0.8rem; color: #666; text-align: center;">記録はありません</p>
+            </div>
+            
+            <div class="title">スプレッドシート連携 (GAS)</div>
+            <div class="card">
+                <label>ウェブアプリURL</label>
+                <input type="text" id="gas-url" placeholder="https://script.google.com/..." style="margin-bottom: 6px;">
+                <button onclick="syncSheet()" style="background: var(--accent);">スプレッドシートに保存</button>
+                <div id="sync-status" style="font-size: 0.75rem; color: var(--accent); margin-top: 4px; text-align: center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- フッター（縦幅を大きくし、濃い紺色ベースに設計） -->
+    <nav class="nav">
+        <div class="nav-item active" onclick="switchTab('dash', this)">
+            <span>📊</span><span>グラフ</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('calendar', this)">
+            <span>📅</span><span>週間予定</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('books', this)">
+            <span>📚</span><span>教材</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('subj-manage', this)">
+            <span>⚙️</span><span>科目設定</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('history', this)">
+            <span>📋</span><span>履歴</span>
+        </div>
+    </nav>
+</div>
+
+<script>
+    const subjects = {
+        "労働基準法・安衛法": { text: { target: 120, actual: 0 }, quiz: { target: 80, actual: 0 } },
+        "労災保険法": { text: { target: 90, actual: 0 }, quiz: { target: 60, actual: 0 } },
+        "雇用保険法": { text: { target: 90, actual: 0 }, quiz: { target: 60, actual: 0 } },
+        "労働一般常識": { text: { target: 60, actual: 0 }, quiz: { target: 40, actual: 0 } },
+        "健康保険法": { text: { target: 120, actual: 0 }, quiz: { target: 80, actual: 0 } },
+        "国民年金法": { text: { target: 120, actual: 0 }, quiz: { target: 80, actual: 0 } },
+        "厚生年金保険法": { text: { target: 150, actual: 0 }, quiz: { target: 100, actual: 0 } },
+        "社会保険一般常識": { text: { target: 60, actual: 0 }, quiz: { target: 40, actual: 0 } }
+    };
+
+    let books = ["基本テキスト 上巻", "基本テキスト 下巻", "過去問集 上巻", "過去問集 下巻", "直前対策講座テキスト"];
+    let history = [];
+    let weekOffset = 0;
+    let selectedDateStr = '';
+
+    window.onload = function() {
+        const today = new Date();
+        document.getElementById('input-date').valueAsDate = today;
+        selectedDateStr = formatDate(today);
+        loadStorage();
+        updateAll();
+    };
+
+    function formatDate(d) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        el.classList.add('active');
+        if(tabId === 'dash') drawRadar();
+        if(tabId === 'calendar') renderWeekCalendar();
+        if(tabId === 'books') renderBookList();
+        if(tabId === 'subj-manage') renderSubjectManageList();
+    }
+
+    function onDateChange(val) {
+        selectedDateStr = val;
+        renderWeekCalendar();
+    }
+
+    function addBook(e) {
+        e.preventDefault();
+        const name = document.getElementById('new-book-name').value.trim();
+        if(name && !books.includes(name)) {
+            books.push(name);
+            saveStorage();
+            renderBookList();
+            updateBookSelect();
+            document.getElementById('new-book-name').value = '';
+            alert('教材を追加しました！');
+        } else {
+            alert('すでに存在するか空の入力です。');
+        }
+    }
+
+    function deleteBook(index) {
+        books.splice(index, 1);
+        saveStorage();
+        renderBookList();
+        updateBookSelect();
+    }
+
+    function renderBookList() {
+        const listEl = document.getElementById('book-list');
+        if(books.length === 0) {
+            listEl.innerHTML = '<p style="font-size: 0.8rem; color: #666; text-align: center;">登録された教材はありません</p>';
+            return;
+        }
+        listEl.innerHTML = '';
+        books.forEach((b, idx) => {
+            listEl.innerHTML += `
+                <div class="item-row">
+                    <span>📚 ${b}</span>
+                    <button onclick="deleteBook(${idx})" style="background:#e74c3c; width:auto; padding:2px 6px; font-size:0.7rem;">削除</button>
+                </div>
+            `;
+        });
+    }
+
+    function updateBookSelect() {
+        const selectEl = document.getElementById('input-book');
+        selectEl.innerHTML = '';
+        books.forEach(b => {
+            selectEl.innerHTML += `<option value="${b}">${b}</option>`;
+        });
+    }
+
+    function renderSubjectManageList() {
+        const container = document.getElementById('subject-manage-list');
+        container.innerHTML = '';
+        for(let [name, data] of Object.entries(subjects)) {
+            container.innerHTML += `
+                <div style="background:#fafbfc; border:1px solid #eee; border-radius:6px; padding:8px; margin-bottom:8px;">
+                    <div style="font-weight:bold; font-size:0.85rem; margin-bottom:4px; color:var(--primary);">${name}</div>
+                    <div style="font-size:0.75rem; color:#1abc9c; font-weight:bold; margin-bottom:2px;">【テキスト】</div>
+                    <div style="display:flex; gap:6px; font-size:0.75rem; margin-bottom:4px;">
+                        <div style="flex:1;"><label>目標P</label><input type="number" value="${data.text.target}" min="1" onchange="updateSubj('${name}', 'text', 'target', this.value)"></div>
+                        <div style="flex:1;"><label>実績P</label><input type="number" value="${data.text.actual}" min="0" onchange="updateSubj('${name}', 'text', 'actual', this.value)"></div>
+                    </div>
+                    <div style="font-size:0.75rem; color:#e67e22; font-weight:bold; margin-bottom:2px;">【問題集】</div>
+                    <div style="display:flex; gap:6px; font-size:0.75rem;">
+                        <div style="flex:1;"><label>目標P</label><input type="number" value="${data.quiz.target}" min="1" onchange="updateSubj('${name}', 'quiz', 'target', this.value)"></div>
+                        <div style="flex:1;"><label>実績P</label><input type="number" value="${data.quiz.actual}" min="0" onchange="updateSubj('${name}', 'quiz', 'actual', this.value)"></div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function updateSubj(name, type, field, val) {
+        const v = parseInt(val);
+        if(!isNaN(v) && v >= 0) {
+            subjects[name][type][field] = v;
+            saveStorage();
+            updateAll();
+        }
+    }
+
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        const editIndex = parseInt(document.getElementById('edit-index').value);
+        const date = document.getElementById('input-date').value;
+        const subject = document.getElementById('input-subject').value;
+        const type = document.getElementById('input-type').value;
+        const book = document.getElementById('input-book').value;
+        const p1 = parseInt(document.getElementById('input-p1').value);
+        const p2 = parseInt(document.getElementById('input-p2').value);
+
+        if(p1 > p2) {
+            alert('開始ページは終了ページより小さくしてください。');
+            return;
+        }
+
+        const count = (p2 - p1) + 1;
+
+        if (editIndex > -1) {
+            const oldItem = history[editIndex];
+            const oldCategoryKey = (oldItem.type === 'テキスト') ? 'text' : 'quiz';
+            if (oldItem.completed && subjects[oldItem.subject] && subjects[oldItem.subject][oldCategoryKey]) {
+                subjects[oldItem.subject][oldCategoryKey].actual = Math.max(0, subjects[oldItem.subject][oldCategoryKey].actual - oldItem.count);
+            }
+
+            history[editIndex] = { ...oldItem, date, subject, type, book, p1, p2, count };
+            
+            if (oldItem.completed) {
+                const newCategoryKey = (type === 'テキスト') ? 'text' : 'quiz';
+                if (subjects[subject] && subjects[subject][newCategoryKey]) {
+                    subjects[subject][newCategoryKey].actual += count;
+                }
+            }
+
+            alert('予定を更新しました！');
+        } else {
+            history.unshift({ date, subject, type, book, p1, p2, count, completed: false });
+            alert('予定を追加しました！');
+        }
+
+        selectedDateStr = date;
+        resetForm();
+        saveStorage();
+        updateAll();
+    }
+
+    function editRecord(index) {
+        const item = history[index];
+        document.getElementById('edit-index').value = index;
+        document.getElementById('input-date').value = item.date;
+        document.getElementById('input-subject').value = item.subject;
+        document.getElementById('input-type').value = item.type;
+        document.getElementById('input-book').value = item.book;
+        document.getElementById('input-p1').value = item.p1;
+        document.getElementById('input-p2').value = item.p2;
+
+        document.getElementById('form-title').textContent = '学習予定の編集';
+        document.getElementById('form-submit-btn').textContent = '予定を更新';
+        document.getElementById('form-cancel-btn').style.display = 'block';
+
+        document.getElementById('study-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById('edit-index').value = '-1';
+        document.getElementById('input-p1').value = '';
+        document.getElementById('input-p2').value = '';
+        document.getElementById('form-title').textContent = '学習予定の追加';
+        document.getElementById('form-submit-btn').textContent = '予定を追加';
+        document.getElementById('form-cancel-btn').style.display = 'none';
+    }
+
+    function toggleComplete(index) {
+        const item = history[index];
+        const categoryKey = (item.type === 'テキスト') ? 'text' : 'quiz';
+
+        item.completed = !item.completed;
+
+        if (item.completed) {
+            if (subjects[item.subject] && subjects[item.subject][categoryKey]) {
+                subjects[item.subject][categoryKey].actual += item.count;
+            }
+        } else {
+            if (subjects[item.subject] && subjects[item.subject][categoryKey]) {
+                subjects[item.subject][categoryKey].actual = Math.max(0, subjects[item.subject][categoryKey].actual - item.count);
+            }
+        }
+
+        saveStorage();
+        updateAll();
+    }
+
+    function deleteRecord(index) {
+        const item = history[index];
+        const categoryKey = (item.type === 'テキスト') ? 'text' : 'quiz';
+        if(item.completed && subjects[item.subject] && subjects[item.subject][categoryKey]) {
+            subjects[item.subject][categoryKey].actual = Math.max(0, subjects[item.subject][categoryKey].actual - item.count);
+        }
+        history.splice(index, 1);
+        saveStorage();
+        updateAll();
+    }
+
+    function updateAll() {
+        updateBookSelect();
+
+        const listEl = document.getElementById('progress-list');
+        listEl.innerHTML = '';
+        for(let [name, data] of Object.entries(subjects)) {
+            const tPct = Math.min(Math.round((data.text.actual / data.text.target) * 100), 100);
+            const qPct = Math.min(Math.round((data.quiz.actual / data.quiz.target) * 100), 100);
+
+            listEl.innerHTML += `
+                <div style="margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 6px;">
+                    <div style="font-weight:bold; font-size:0.85rem; margin-bottom:2px; color:var(--primary);">${name}</div>
+                    <div style="font-size:0.75rem; color:#555; display:flex; justify-content:space-between;">
+                        <span>📖 テキスト: ${data.text.actual}/${data.text.target}P (${tPct}%)</span>
+                    </div>
+                    <div class="progress-bg"><div class="progress-fill" style="width:${tPct}%;"></div></div>
+                    <div style="font-size:0.75rem; color:#555; display:flex; justify-content:space-between; margin-top:4px;">
+                        <span>📝 問題集: ${data.quiz.actual}/${data.quiz.target}P (${qPct}%)</span>
+                    </div>
+                    <div class="progress-bg"><div class="progress-fill-q" style="width:${qPct}%;"></div></div>
+                </div>
+            `;
+        }
+
+        const histEl = document.getElementById('history-list');
+        if(history.length === 0) {
+            histEl.innerHTML = '<p style="font-size: 0.8rem; color: #666; text-align: center;">記録はありません</p>';
+        } else {
+            histEl.innerHTML = '';
+            history.forEach((h, idx) => {
+                const badgeColor = h.type === 'テキスト' ? '#1abc9c' : '#e67e22';
+                const statusStyle = h.completed ? 'opacity: 0.6; text-decoration: line-through;' : '';
+                const btnText = h.completed ? '未完了' : '完了';
+                const btnClass = h.completed ? 'btn-warning' : 'btn-success';
+
+                histEl.innerHTML += `
+                    <div class="item-row" style="${statusStyle}">
+                        <div><b>${h.date}</b> [${h.subject}] <span style="background:${badgeColor}; color:#fff; font-size:0.65rem; padding:1px 4px; border-radius:3px;">${h.type}</span><br>📚${h.book} P.${h.p1}〜${h.p2} (${h.count}P)</div>
+                        <div style="display:flex; gap:3px;">
+                            <button class="${btnClass}" onclick="toggleComplete(${idx})" style="width:auto; padding:2px 5px; font-size:0.65rem;">${btnText}</button>
+                            <button onclick="editRecord(${idx})" style="background:var(--accent); width:auto; padding:2px 5px; font-size:0.65rem;">編集</button>
+                            <button onclick="deleteRecord(${idx})" style="background:#e74c3c; width:auto; padding:2px 5px; font-size:0.65rem;">削除</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        renderWeekCalendar();
+        drawRadar();
+    }
+
+    function changeWeek(dir) {
+        weekOffset += dir;
+        renderWeekCalendar();
+    }
+
+    function renderWeekCalendar() {
+        const container = document.getElementById('weekly-calendar-grid');
+        container.innerHTML = '';
+
+        const now = new Date();
+        const base = new Date(now);
+        const day = now.getDay();
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1) + (weekOffset * 7);
+        base.setDate(diff);
+
+        let startStr = '', endStr = '';
+        const weekDates = [];
+
+        for(let i=0; i<7; i++) {
+            const d = new Date(base);
+            d.setDate(base.getDate() + i);
+            const dateStr = formatDate(d);
+            weekDates.push({ dateObj: d, dateStr });
+
+            if(i === 0) startStr = `${d.getMonth()+1}/${d.getDate()}`;
+            if(i === 6) endStr = `${d.getMonth()+1}/${d.getDate()}`;
+        }
+        document.getElementById('week-title').textContent = `${startStr} 〜 ${endStr}`;
+
+        const todayStr = formatDate(new Date());
+
+        weekDates.forEach(item => {
+            const isToday = (item.dateStr === todayStr);
+            const isSelected = (item.dateStr === selectedDateStr);
+            const hasEvent = history.some(h => h.date === item.dateStr);
+
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell' + (isToday ? ' today' : '') + (hasEvent ? ' has-event' : '');
+            if(isSelected) cell.style.borderColor = 'var(--accent)';
+
+            cell.innerHTML = `
+                <span style="font-weight:bold;">${item.dateObj.getDate()}</span>
+                <span style="font-size:0.65rem; color:#666;">${['日','月','火','水','木','金','土'][item.dateObj.getDay()]}</span>
+            `;
+
+            cell.onclick = function() {
+                selectedDateStr = item.dateStr;
+                document.getElementById('input-date').value = item.dateStr;
+                renderWeekCalendar();
+            };
+
+            container.appendChild(cell);
+        });
+
+        updateSelectedDayDetails();
+    }
+
+    function updateSelectedDayDetails() {
+        document.getElementById('selected-date-label').textContent = `${selectedDateStr} の予定`;
+        const container = document.getElementById('selected-day-events');
+        
+        const dayEventsWithIndices = [];
+        history.forEach((h, idx) => {
+            if(h.date === selectedDateStr) {
+                dayEventsWithIndices.push({ item: h, index: idx });
+            }
+        });
+
+        if(dayEventsWithIndices.length === 0) {
+            container.innerHTML = '<div style="color:#888; font-size:0.75rem; margin-top:4px;">この日の予定はありません</div>';
+        } else {
+            container.innerHTML = '';
+            dayEventsWithIndices.forEach(obj => {
+                const ev = obj.item;
+                const idx = obj.index;
+                const badgeColor = ev.type === 'テキスト' ? '#1abc9c' : '#e67e22';
+                const statusStyle = ev.completed ? 'opacity: 0.6; text-decoration: line-through;' : '';
+                const btnText = ev.completed ? '未完了' : '完了';
+                const btnClass = ev.completed ? 'btn-warning' : 'btn-success';
+
+                container.innerHTML += `
+                    <div style="background:#eef2f5; padding:6px; border-radius:4px; margin-top:4px; font-size:0.75rem; ${statusStyle}">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <b style="color:var(--primary);">${ev.subject}</b> <span style="background:${badgeColor}; color:#fff; font-size:0.6rem; padding:1px 3px; border-radius:2px;">${ev.type}</span> [📚${ev.book}]<br>
+                                P.${ev.p1}〜${ev.p2} (${ev.count}P)
+                            </div>
+                            <div style="display:flex; gap:2px;">
+                                <button class="${btnClass}" onclick="toggleComplete(${idx})" style="width:auto; padding:2px 4px; font-size:0.6rem;">${btnText}</button>
+                                <button onclick="editRecord(${idx})" style="background:var(--accent); width:auto; padding:2px 4px; font-size:0.6rem;">編集</button>
+                                <button onclick="deleteRecord(${idx})" style="background:#e74c3c; width:auto; padding:2px 4px; font-size:0.6rem;">削除</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    function drawRadar() {
+        const canvas = document.getElementById('radarCanvas');
+        if(!canvas || !canvas.getContext) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width, h = canvas.height;
+        const cx = w/2, cy = h/2, r = w * 0.35;
+
+        ctx.clearRect(0,0,w,h);
+        const keys = Object.keys(subjects);
+        const total = keys.length;
+
+        ctx.strokeStyle = '#e1e8ed';
+        for(let l=1; l<=3; l++) {
+            ctx.beginPath();
+            const cr = r * (l/3);
+            for(let i=0; i<total; i++) {
+                const angle = (Math.PI*2/total)*i - Math.PI/2;
+                const x = cx + cr * Math.cos(angle);
+                const y = cy + cr * Math.sin(angle);
+                if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = '#666';
+        ctx.font = '9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for(let i=0; i<total; i++) {
+            const angle = (Math.PI*2/total)*i - Math.PI/2;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+
+            let lx = cx + (r + 20) * Math.cos(angle);
+            let ly = cy + (r + 20) * Math.sin(angle);
+            let label = keys[i].replace('・安衛法','').replace('保険法','');
+            ctx.fillText(label, lx, ly);
+        }
+
+        ctx.beginPath();
+        for(let i=0; i<total; i++) {
+            const dat = subjects[keys[i]];
+            const totalTarget = dat.text.target + dat.quiz.target;
+            const totalActual = dat.text.actual + dat.quiz.actual;
+            const pct = Math.min(totalActual / totalTarget, 1.0);
+            const dr = r * pct;
+            const angle = (Math.PI*2/total)*i - Math.PI/2;
+            const x = cx + dr * Math.cos(angle);
+            const y = cy + dr * Math.sin(angle);
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(26, 188, 156, 0.25)';
+        ctx.fill();
+        ctx.strokeStyle = '#1abc9c';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    function saveStorage() {
+        localStorage.setItem('sharo_subj_v4', JSON.stringify(subjects));
+        localStorage.setItem('sharo_books', JSON.stringify(books));
+        localStorage.setItem('sharo_hist_v4', JSON.stringify(history));
+    }
+
+    function loadStorage() {
+        const s = localStorage.getItem('sharo_subj_v4');
+        const b = localStorage.getItem('sharo_books');
+        const h = localStorage.getItem('sharo_hist_v4');
+        if(s) Object.assign(subjects, JSON.parse(s));
+        if(b) books = JSON.parse(b);
+        if(h) history = JSON.parse(h);
+    }
+
+    function syncSheet() {
+        const url = document.getElementById('gas-url').value.trim();
+        const stat = document.getElementById('sync-status');
+        if(!url) {
+            alert('GASのURLを入力してください');
+            return;
+        }
+        localStorage.setItem('sharo_gas', url);
+        stat.textContent = '送信中...';
+        fetch(url, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ history, subjects, books })
+        }).then(() => {
+            stat.textContent = '送信完了！';
+            setTimeout(()=> stat.textContent='', 3000);
+        }).catch(err => {
+            stat.textContent = '送信失敗';
+            stat.style.color = '#e74c3c';
+        });
+    }
+</script>
+
+</body>
+</html>
