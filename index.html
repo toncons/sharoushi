@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>社労士学習スケジュール</title>
     <style>
         :root {
@@ -13,6 +13,9 @@
             --card: #ffffff;
             --text: #2c3e50;
         }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg);
@@ -21,30 +24,53 @@
             padding: 0;
             display: flex;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
+        /* スマートフォンサイズを固定し、はみ出しや不安定さを解消 */
         .container {
             width: 100%;
-            max-width: 430px;
-            min-height: 100vh;
+            max-width: 414px;
+            height: 100vh;
+            max-height: 896px;
             background: var(--card);
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
-            padding-bottom: 90px; /* フッターを大きくした分パディングを調整 */
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border-radius: 16px;
         }
         header {
             background: var(--primary);
             color: white;
-            padding: 18px;
+            padding: 14px 16px;
             text-align: center;
-            font-weight: bold;
-            font-size: 1.15rem;
             border-bottom: 3px solid var(--accent);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-weight: bold;
+            font-size: 1.05rem;
+        }
+        .app-version {
+            font-size: 0.7rem;
+            color: #1abc9c;
+            background: rgba(26, 188, 156, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
         }
         .content {
             flex: 1;
-            padding: 14px;
+            padding: 12px;
             overflow-y: auto;
+            /* フッターに隠れないよう下部に十分なスペースを確保 */
+            padding-bottom: 95px;
         }
         .card {
             background: #fff;
@@ -55,7 +81,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.03);
         }
         .title {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
             color: var(--primary);
             margin-bottom: 8px;
@@ -73,11 +99,10 @@
         }
         input, select, button {
             width: 100%;
-            padding: 9px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 0.9rem;
-            box-sizing: border-box;
+            font-size: 0.85rem;
         }
         input:focus, select:focus {
             border-color: var(--accent);
@@ -95,22 +120,23 @@
         button:hover {
             background: var(--accent-hover);
         }
-        /* フッターの縦幅を大きくし、エレガントなカラーに調整 */
+        /* フッターを固定しサイズを安定化 */
         .nav {
-            position: fixed;
+            position: absolute;
             bottom: 0;
+            left: 0;
             width: 100%;
-            max-width: 430px;
+            height: 75px;
             background: var(--primary);
             border-top: 2px solid var(--accent);
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
-            z-index: 10;
+            align-items: center;
+            z-index: 100;
         }
         .nav-item {
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #bdc3c7;
             cursor: pointer;
             flex: 1;
@@ -133,10 +159,10 @@
         .progress-bg {
             background: #e1e8ed;
             border-radius: 4px;
-            height: 8px;
+            height: 7px;
             width: 100%;
             overflow: hidden;
-            margin-top: 4px;
+            margin-top: 3px;
         }
         .progress-fill {
             background: var(--accent);
@@ -144,27 +170,19 @@
             width: 0%;
         }
         .progress-fill-q {
-            background: #f39c12;
+            background: #e67e22;
             height: 100%;
             width: 0%;
-        }
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f1f1;
         }
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
+            gap: 3px;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .calendar-day-header {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--primary);
             font-weight: bold;
         }
@@ -172,13 +190,14 @@
             background: #fdfdfd;
             border: 1px solid #eaeaea;
             border-radius: 6px;
-            min-height: 48px;
+            min-height: 42px;
             padding: 2px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
         .calendar-cell.today {
             border-color: var(--accent);
@@ -186,11 +205,11 @@
         }
         .calendar-cell.has-event::after {
             content: '';
-            width: 5px;
-            height: 5px;
+            width: 4px;
+            height: 4px;
             background: var(--accent);
             border-radius: 50%;
-            margin-top: 3px;
+            margin-top: 2px;
         }
         .btn-success {
             background-color: var(--accent) !important;
@@ -203,14 +222,17 @@
 <body>
 
 <div class="container">
-    <header>社労士 学習スケジュール</header>
+    <header>
+        <h1>社労士 学習スケジュール</h1>
+        <span class="app-version">v1.2.0</span>
+    </header>
 
     <div class="content">
         <!-- タブ1: 進捗・グラフ -->
         <div id="tab-dash" class="tab-pane active">
             <div class="title">学習バランス（レーダーチャート）</div>
             <div class="card" style="text-align: center;">
-                <canvas id="radarCanvas" width="260" height="260" style="max-width: 100%;"></canvas>
+                <canvas id="radarCanvas" width="220" height="220" style="max-width: 100%;"></canvas>
             </div>
 
             <div class="title">科目別進捗 (テキスト・問題集別)</div>
@@ -221,10 +243,10 @@
         <div id="tab-calendar" class="tab-pane">
             <div class="title">週間予定カレンダー</div>
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; font-weight: bold;">
-                    <button onclick="changeWeek(-1)" style="width: auto; padding: 4px 10px;">&lt; 前週</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.8rem; font-weight: bold;">
+                    <button onclick="changeWeek(-1)" style="width: auto; padding: 3px 8px;">&lt; 前週</button>
                     <span id="week-title" style="color: var(--primary);">---</span>
-                    <button onclick="changeWeek(1)" style="width: auto; padding: 4px 10px;">翌週 &gt;</button>
+                    <button onclick="changeWeek(1)" style="width: auto; padding: 3px 8px;">翌週 &gt;</button>
                 </div>
                 <div class="calendar-grid">
                     <div class="calendar-day-header">日</div>
@@ -235,9 +257,9 @@
                     <div class="calendar-day-header">金</div>
                     <div class="calendar-day-header">土</div>
                 </div>
-                <div id="weekly-calendar-grid" class="calendar-grid" style="margin-bottom: 10px;"></div>
+                <div id="weekly-calendar-grid" class="calendar-grid" style="margin-bottom: 6px;"></div>
                 
-                <div id="selected-day-details" style="font-size: 0.8rem; border-top: 1px solid #eee; padding-top: 8px;">
+                <div id="selected-day-details" style="font-size: 0.75rem; border-top: 1px solid #eee; padding-top: 6px;">
                     <b id="selected-date-label" style="color: var(--primary);">日付を選択してください</b>
                     <div id="selected-day-events" style="margin-top: 4px;"></div>
                 </div>
@@ -277,7 +299,7 @@
                     </div>
                     <div class="form-group">
                         <label>ページ範囲 (例: 1 〜 30)</label>
-                        <div style="display: flex; gap: 6px; align-items: center;">
+                        <div style="display: flex; gap: 4px; align-items: center;">
                             <input type="number" id="input-p1" min="1" placeholder="開始" required>
                             <span>〜</span>
                             <input type="number" id="input-p2" min="1" placeholder="終了" required>
@@ -315,13 +337,8 @@
             </div>
         </div>
 
-        <!-- タブ5: 履歴・設定 -->
-        <div id="tab-history" class="tab-pane">
-            <div class="title">学習履歴・管理</div>
-            <div class="card" id="history-list">
-                <p style="font-size: 0.8rem; color: #666; text-align: center;">記録はありません</p>
-            </div>
-            
+        <!-- タブ5: 設定・同期 -->
+        <div id="tab-settings" class="tab-pane">
             <div class="title">スプレッドシート連携 (GAS)</div>
             <div class="card">
                 <label>ウェブアプリURL</label>
@@ -332,7 +349,7 @@
         </div>
     </div>
 
-    <!-- フッター（縦幅を大きくし、濃い紺色ベースに設計） -->
+    <!-- 固定フッター -->
     <nav class="nav">
         <div class="nav-item active" onclick="switchTab('dash', this)">
             <span>📊</span><span>グラフ</span>
@@ -346,8 +363,8 @@
         <div class="nav-item" onclick="switchTab('subj-manage', this)">
             <span>⚙️</span><span>科目設定</span>
         </div>
-        <div class="nav-item" onclick="switchTab('history', this)">
-            <span>📋</span><span>履歴</span>
+        <div class="nav-item" onclick="switchTab('settings', this)">
+            <span>🔗</span><span>連携</span>
         </div>
     </nav>
 </div>
@@ -431,9 +448,9 @@
         listEl.innerHTML = '';
         books.forEach((b, idx) => {
             listEl.innerHTML += `
-                <div class="item-row">
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid #f1f1f1;">
                     <span>📚 ${b}</span>
-                    <button onclick="deleteBook(${idx})" style="background:#e74c3c; width:auto; padding:2px 6px; font-size:0.7rem;">削除</button>
+                    <button onclick="deleteBook(${idx})" style="background:#e74c3c; width:auto; padding:2px 6px; font-size:0.7rem; margin:0;">削除</button>
                 </div>
             `;
         });
@@ -453,13 +470,13 @@
         for(let [name, data] of Object.entries(subjects)) {
             container.innerHTML += `
                 <div style="background:#fafbfc; border:1px solid #eee; border-radius:6px; padding:8px; margin-bottom:8px;">
-                    <div style="font-weight:bold; font-size:0.85rem; margin-bottom:4px; color:var(--primary);">${name}</div>
-                    <div style="font-size:0.75rem; color:#1abc9c; font-weight:bold; margin-bottom:2px;">【テキスト】</div>
+                    <div style="font-weight:bold; font-size:0.8rem; margin-bottom:4px; color:var(--primary);">${name}</div>
+                    <div style="font-size:0.7rem; color:#1abc9c; font-weight:bold; margin-bottom:2px;">【テキスト】</div>
                     <div style="display:flex; gap:6px; font-size:0.75rem; margin-bottom:4px;">
                         <div style="flex:1;"><label>目標P</label><input type="number" value="${data.text.target}" min="1" onchange="updateSubj('${name}', 'text', 'target', this.value)"></div>
                         <div style="flex:1;"><label>実績P</label><input type="number" value="${data.text.actual}" min="0" onchange="updateSubj('${name}', 'text', 'actual', this.value)"></div>
                     </div>
-                    <div style="font-size:0.75rem; color:#e67e22; font-weight:bold; margin-bottom:2px;">【問題集】</div>
+                    <div style="font-size:0.7rem; color:#e67e22; font-weight:bold; margin-bottom:2px;">【問題集】</div>
                     <div style="display:flex; gap:6px; font-size:0.75rem;">
                         <div style="flex:1;"><label>目標P</label><input type="number" value="${data.quiz.target}" min="1" onchange="updateSubj('${name}', 'quiz', 'target', this.value)"></div>
                         <div style="flex:1;"><label>実績P</label><input type="number" value="${data.quiz.actual}" min="0" onchange="updateSubj('${name}', 'quiz', 'actual', this.value)"></div>
@@ -510,7 +527,6 @@
                     subjects[subject][newCategoryKey].actual += count;
                 }
             }
-
             alert('予定を更新しました！');
         } else {
             history.unshift({ date, subject, type, book, p1, p2, count, completed: false });
@@ -591,41 +607,17 @@
 
             listEl.innerHTML += `
                 <div style="margin-bottom: 10px; border-bottom: 1px solid #f1f1f1; padding-bottom: 6px;">
-                    <div style="font-weight:bold; font-size:0.85rem; margin-bottom:2px; color:var(--primary);">${name}</div>
-                    <div style="font-size:0.75rem; color:#555; display:flex; justify-content:space-between;">
+                    <div style="font-weight:bold; font-size:0.8rem; margin-bottom:2px; color:var(--primary);">${name}</div>
+                    <div style="font-size:0.7rem; color:#555; display:flex; justify-content:space-between;">
                         <span>📖 テキスト: ${data.text.actual}/${data.text.target}P (${tPct}%)</span>
                     </div>
                     <div class="progress-bg"><div class="progress-fill" style="width:${tPct}%;"></div></div>
-                    <div style="font-size:0.75rem; color:#555; display:flex; justify-content:space-between; margin-top:4px;">
+                    <div style="font-size:0.7rem; color:#555; display:flex; justify-content:space-between; margin-top:3px;">
                         <span>📝 問題集: ${data.quiz.actual}/${data.quiz.target}P (${qPct}%)</span>
                     </div>
                     <div class="progress-bg"><div class="progress-fill-q" style="width:${qPct}%;"></div></div>
                 </div>
             `;
-        }
-
-        const histEl = document.getElementById('history-list');
-        if(history.length === 0) {
-            histEl.innerHTML = '<p style="font-size: 0.8rem; color: #666; text-align: center;">記録はありません</p>';
-        } else {
-            histEl.innerHTML = '';
-            history.forEach((h, idx) => {
-                const badgeColor = h.type === 'テキスト' ? '#1abc9c' : '#e67e22';
-                const statusStyle = h.completed ? 'opacity: 0.6; text-decoration: line-through;' : '';
-                const btnText = h.completed ? '未完了' : '完了';
-                const btnClass = h.completed ? 'btn-warning' : 'btn-success';
-
-                histEl.innerHTML += `
-                    <div class="item-row" style="${statusStyle}">
-                        <div><b>${h.date}</b> [${h.subject}] <span style="background:${badgeColor}; color:#fff; font-size:0.65rem; padding:1px 4px; border-radius:3px;">${h.type}</span><br>📚${h.book} P.${h.p1}〜${h.p2} (${h.count}P)</div>
-                        <div style="display:flex; gap:3px;">
-                            <button class="${btnClass}" onclick="toggleComplete(${idx})" style="width:auto; padding:2px 5px; font-size:0.65rem;">${btnText}</button>
-                            <button onclick="editRecord(${idx})" style="background:var(--accent); width:auto; padding:2px 5px; font-size:0.65rem;">編集</button>
-                            <button onclick="deleteRecord(${idx})" style="background:#e74c3c; width:auto; padding:2px 5px; font-size:0.65rem;">削除</button>
-                        </div>
-                    </div>
-                `;
-            });
         }
 
         renderWeekCalendar();
@@ -674,7 +666,7 @@
 
             cell.innerHTML = `
                 <span style="font-weight:bold;">${item.dateObj.getDate()}</span>
-                <span style="font-size:0.65rem; color:#666;">${['日','月','火','水','木','金','土'][item.dateObj.getDay()]}</span>
+                <span style="font-size:0.6rem; color:#666;">${['日','月','火','水','木','金','土'][item.dateObj.getDay()]}</span>
             `;
 
             cell.onclick = function() {
@@ -716,13 +708,13 @@
                     <div style="background:#eef2f5; padding:6px; border-radius:4px; margin-top:4px; font-size:0.75rem; ${statusStyle}">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div>
-                                <b style="color:var(--primary);">${ev.subject}</b> <span style="background:${badgeColor}; color:#fff; font-size:0.6rem; padding:1px 3px; border-radius:2px;">${ev.type}</span> [📚${ev.book}]<br>
+                                <b style="color:var(--primary);">${ev.subject}</b> <span style="background:${badgeColor}; color:#fff; font-size:0.55rem; padding:1px 3px; border-radius:2px;">${ev.type}</span> [📚${ev.book}]<br>
                                 P.${ev.p1}〜${ev.p2} (${ev.count}P)
                             </div>
                             <div style="display:flex; gap:2px;">
-                                <button class="${btnClass}" onclick="toggleComplete(${idx})" style="width:auto; padding:2px 4px; font-size:0.6rem;">${btnText}</button>
-                                <button onclick="editRecord(${idx})" style="background:var(--accent); width:auto; padding:2px 4px; font-size:0.6rem;">編集</button>
-                                <button onclick="deleteRecord(${idx})" style="background:#e74c3c; width:auto; padding:2px 4px; font-size:0.6rem;">削除</button>
+                                <button class="${btnClass}" onclick="toggleComplete(${idx})" style="width:auto; padding:2px 4px; font-size:0.6rem; margin:0;">${btnText}</button>
+                                <button onclick="editRecord(${idx})" style="background:var(--accent); width:auto; padding:2px 4px; font-size:0.6rem; margin:0;">編集</button>
+                                <button onclick="deleteRecord(${idx})" style="background:#e74c3c; width:auto; padding:2px 4px; font-size:0.6rem; margin:0;">削除</button>
                             </div>
                         </div>
                     </div>
@@ -757,7 +749,7 @@
         }
 
         ctx.fillStyle = '#666';
-        ctx.font = '9px sans-serif';
+        ctx.font = '8px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         for(let i=0; i<total; i++) {
@@ -766,8 +758,8 @@
             const y = cy + r * Math.sin(angle);
             ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
 
-            let lx = cx + (r + 20) * Math.cos(angle);
-            let ly = cy + (r + 20) * Math.sin(angle);
+            let lx = cx + (r + 18) * Math.cos(angle);
+            let ly = cy + (r + 18) * Math.sin(angle);
             let label = keys[i].replace('・安衛法','').replace('保険法','');
             ctx.fillText(label, lx, ly);
         }
@@ -793,15 +785,15 @@
     }
 
     function saveStorage() {
-        localStorage.setItem('sharo_subj_v4', JSON.stringify(subjects));
+        localStorage.setItem('sharo_subj_v5', JSON.stringify(subjects));
         localStorage.setItem('sharo_books', JSON.stringify(books));
-        localStorage.setItem('sharo_hist_v4', JSON.stringify(history));
+        localStorage.setItem('sharo_hist_v5', JSON.stringify(history));
     }
 
     function loadStorage() {
-        const s = localStorage.getItem('sharo_subj_v4');
+        const s = localStorage.getItem('sharo_subj_v5');
         const b = localStorage.getItem('sharo_books');
-        const h = localStorage.getItem('sharo_hist_v4');
+        const h = localStorage.getItem('sharo_hist_v5');
         if(s) Object.assign(subjects, JSON.parse(s));
         if(b) books = JSON.parse(b);
         if(h) history = JSON.parse(h);
