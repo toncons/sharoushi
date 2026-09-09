@@ -29,7 +29,6 @@
             overscroll-behavior: none;
             touch-action: manipulation;
         }
-        /* パソコン等でも崩れず、中央に美しく配置されるスマートフォンフレーム風の設計（レスポンシブ対応） */
         .container {
             width: 100%;
             max-width: 450px;
@@ -41,14 +40,14 @@
             position: relative;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             overflow: hidden;
-            border-radius: 0; /* パソコン表示でも角が丸くならないように変更 */
+            border-radius: 0;
         }
 
         @media (min-width: 480px) {
             .container {
                 height: 90vh;
                 max-height: 850px;
-                border-radius: 12px; /*PC表示時は適度な角丸に */
+                border-radius: 12px;
             }
         }
 
@@ -58,7 +57,7 @@
             padding: 14px 16px;
             text-align: center;
             border-bottom: 3px solid var(--accent);
-            border-radius: 0; /* 丸みを完全になくす */
+            border-radius: 0;
             flex-shrink: 0;
             display: flex;
             justify-content: space-between;
@@ -133,7 +132,6 @@
         button:hover {
             background: var(--accent-hover);
         }
-        /* フッターの丸みをなくし、直線的なデザインに固定 */
         .nav {
             position: absolute;
             bottom: 0;
@@ -238,7 +236,7 @@
 <div class="container">
     <header>
         <h1>社労士 学習スケジュール</h1>
-        <span class="app-version">v1.3.0</span>
+        <span class="app-version">v1.3.1</span>
     </header>
 
     <div class="content">
@@ -356,7 +354,7 @@
             <div class="title">スプレッドシート連携 (GAS)</div>
             <div class="card">
                 <label>ウェブアプリURL</label>
-                <input type="text" id="gas-url" placeholder="https://script.google.com/..." style="margin-bottom: 6px;">
+                <input type="text" id="gas-url" placeholder="https://script.google.com/..." style="margin-bottom: 6px;" onchange="saveGasUrl(this.value)">
                 <button onclick="syncSheet()" style="background: var(--accent);">スプレッドシートに保存</button>
                 <div id="sync-status" style="font-size: 0.75rem; color: var(--accent); margin-top: 4px; text-align: center;"></div>
             </div>
@@ -798,6 +796,10 @@
         ctx.stroke();
     }
 
+    function saveGasUrl(val) {
+        localStorage.setItem('sharo_gas_url', val.trim());
+    }
+
     function saveStorage() {
         localStorage.setItem('sharo_subj_v5', JSON.stringify(subjects));
         localStorage.setItem('sharo_books', JSON.stringify(books));
@@ -808,9 +810,14 @@
         const s = localStorage.getItem('sharo_subj_v5');
         const b = localStorage.getItem('sharo_books');
         const h = localStorage.getItem('sharo_hist_v5');
+        const gas = localStorage.getItem('sharo_gas_url');
+
         if(s) Object.assign(subjects, JSON.parse(s));
         if(b) books = JSON.parse(b);
         if(h) history = JSON.parse(h);
+        if(gas) {
+            document.getElementById('gas-url').value = gas;
+        }
     }
 
     function syncSheet() {
@@ -820,7 +827,7 @@
             alert('GASのURLを入力してください');
             return;
         }
-        localStorage.setItem('sharo_gas', url);
+        saveGasUrl(url);
         stat.textContent = '送信中...';
         fetch(url, {
             method: 'POST',
