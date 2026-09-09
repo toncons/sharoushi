@@ -54,7 +54,7 @@
         header {
             background: var(--primary);
             color: white;
-            padding: 14px 16px;
+            padding: 12px 14px;
             text-align: center;
             border-bottom: 3px solid var(--accent);
             border-radius: 0;
@@ -66,15 +66,35 @@
         header h1 {
             margin: 0;
             font-weight: bold;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
         .app-version {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #1abc9c;
             background: rgba(26, 188, 156, 0.15);
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             font-weight: bold;
+        }
+        .btn-load {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0;
+            width: auto;
+        }
+        .btn-load:hover {
+            background: var(--accent-hover);
         }
         .content {
             flex: 1;
@@ -236,7 +256,10 @@
 <div class="container">
     <header>
         <h1>社労士 学習スケジュール</h1>
-        <span class="app-version">v1.3.1</span>
+        <div class="header-right">
+            <button class="btn-load" onclick="loadFromSpreadsheet()">データ読込</button>
+            <span class="app-version">v1.4.0</span>
+        </div>
     </header>
 
     <div class="content">
@@ -768,7 +791,11 @@
             const angle = (Math.PI*2/total)*i - Math.PI/2;
             const x = cx + r * Math.cos(angle);
             const y = cy + r * Math.sin(angle);
-            ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(cx,cy);
+            ctx.lineTo(x,y);
+            ctx.stroke();
 
             let lx = cx + (r + 18) * Math.cos(angle);
             let ly = cy + (r + 18) * Math.sin(angle);
@@ -786,6 +813,7 @@
             const angle = (Math.PI*2/total)*i - Math.PI/2;
             const x = cx + dr * Math.cos(angle);
             const y = cy + dr * Math.sin(angle);
+
             if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
         }
         ctx.closePath();
@@ -816,7 +844,8 @@
         if(b) books = JSON.parse(b);
         if(h) history = JSON.parse(h);
         if(gas) {
-            document.getElementById('gas-url').value = gas;
+            const gasInput = document.getElementById('gas-url');
+            if(gasInput) gasInput.value = gas;
         }
     }
 
@@ -841,6 +870,17 @@
             stat.textContent = '送信失敗';
             stat.style.color = '#e74c3c';
         });
+    }
+
+    // スプレッドシートからのデータ読み込み機能（GETリクエスト対応想定）
+    function loadFromSpreadsheet() {
+        const url = document.getElementById('gas-url') ? document.getElementById('gas-url').value.trim() : localStorage.getItem('sharo_gas_url');
+        if(!url) {
+            alert('「連携」タブでGASのウェブアプリURLを設定してください。');
+            return;
+        }
+
+        alert('スプレッドシートからのデータ読み込み機能を利用するには、GAS側にdoGet関数でデータを返す処理の実装が必要です。');
     }
 </script>
 
